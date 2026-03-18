@@ -1,28 +1,290 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Proxy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'DM Sans', sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* GIF de natureza como fundo */
+    .bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+
+    /* Overlay muito sutil pra melhorar legibilidade */
+    .bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    /* Card glassmorphism */
+    .card {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 420px;
+      margin: 24px;
+      padding: 44px 40px;
+      background: rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(24px) saturate(160%);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      border-radius: 24px;
+      box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5);
+      animation: appear 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(20px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Header */
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 34px;
+      font-weight: 400;
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+
+    h1 em {
+      font-style: italic;
+      color: rgba(255,255,255,0.75);
+    }
+
+    .desc {
+      font-size: 13px;
+      color: rgba(255,255,255,0.55);
+      font-weight: 300;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: rgba(255,255,255,0.2);
+      margin-bottom: 28px;
+    }
+
+    /* Input */
+    .input-label {
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .input-wrapper {
+      position: relative;
+      margin-bottom: 14px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 14px 18px;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 12px;
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      outline: none;
+      transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="text"]::placeholder {
+      color: rgba(255,255,255,0.35);
+    }
+
+    input[type="text"]:focus {
+      background: rgba(255, 255, 255, 0.22);
+      border-color: rgba(255, 255, 255, 0.55);
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.1);
+    }
+
+    /* Botão */
+    button {
+      width: 100%;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #1a1a1a;
+      border: none;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    button:hover {
+      background: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    button svg {
+      width: 16px;
+      height: 16px;
+      transition: transform 0.2s;
+    }
+
+    button:hover svg {
+      transform: translateX(3px);
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.35);
+      font-weight: 300;
+    }
+
+    .footer-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.35);
+    }
+
+    @media (max-width: 480px) {
+      .card { padding: 32px 24px; }
+      h1 { font-size: 28px; }
+    }
+  </style>
 </head>
 <body>
-  <h1>Proxy 🔓</h1>
 
-  <input id="url" placeholder="Digite o site (ex: google.com)">
-  <button onclick="go()">Acessar</button>
+  <!-- Fundo gif de natureza -->
+  <div class="bg">
+    <img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExMGIzdXVhcXJqdWQ4Y2FuZjB3cnIwYzl3eXc3b2N3eHZzaTJzbjhzdyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/dWVNHzQEnivqgLaZWs/giphy.gif" alt="natureza">
+  </div>
+
+  <div class="card">
+    <p class="eyebrow">Acesso livre</p>
+    <h1>Proxy <em>limpo</em></h1>
+    <p class="desc">Digite o endereço e acesse qualquer site pelo túnel seguro.</p>
+
+    <div class="divider"></div>
+
+    <label class="input-label" for="url">Endereço</label>
+    <div class="input-wrapper">
+      <input
+        type="text"
+        id="url"
+        placeholder="exemplo.com"
+        autocomplete="off"
+        spellcheck="false"
+      >
+    </div>
+
+    <button id="btn" onclick="go()">
+      Acessar
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </button>
+
+    <div class="footer">
+      <span>Tunnel</span>
+      <div class="footer-dot"></div>
+      <span>Ativo</span>
+      <div class="footer-dot"></div>
+      <span>v2.0</span>
+    </div>
+  </div>
 
   <script>
-    // URL do seu Cloudflare Worker
     const WORKER = "https://quiet-river-77cb.ryangomesmelo123.workers.dev";
 
     function go() {
+      const btn = document.getElementById("btn");
       let url = document.getElementById("url").value.trim();
+      if (!url) return;
       if (!url.startsWith("http")) url = "https://" + url;
-      window.location.href = WORKER + "?url=" + btoa(url);
+
+      btn.innerHTML = `
+        Conectando
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation: spin 0.8s linear infinite">
+          <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+        </svg>
+      `;
+      btn.style.pointerEvents = "none";
+
+      setTimeout(() => {
+        window.location.href = WORKER + "?url=" + btoa(url);
+      }, 500);
     }
 
     document.getElementById("url").addEventListener("keydown", e => {
       if (e.key === "Enter") go();
     });
+
+    const style = document.createElement("style");
+    style.textContent = "@keyframes spin { to { transform: rotate(360deg); } }";
+    document.head.appendChild(style);
   </script>
 </body>
 </html>
