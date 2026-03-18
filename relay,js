@@ -1,0 +1,73 @@
+export default {
+  async fetch(request) {
+    const url = new URL(request.url);
+
+    // CORS preflight
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+          "Access-Control-Allow-Headers": "*",
+        }
+      });
+    }
+
+    let encoded = url.searchParams.get("url");
+    if (!encoded) return new Response("sem url", { status: 400 });
+
+    let targetUrl;
+    try {
+      targetUrl = atob(encoded);
+    } catch {
+      return new Response("url inválida", { status: 400 });
+    }
+
+    try {
+      const reqHeaders = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": request.headers.get("accept") || "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
+        "Referer": new URL(targetUrl).origin + "/",
+        "Origin": new URL(targetUrl).origin,
+      };
+
+      // repassa cookie se vier do proxy
+      const cookie = request.headers.get("x-relay-cookie");
+      if (cookie) reqHeaders["Cookie"] = cookie;
+
+      const response = await fetch(targetUrl, {
+        method: request.method,
+        headers: reqHeaders,
+        body: ["GET", "HEAD"].includes(request.method) ? null : await request.arrayBuffer(),
+        redirect: "follow"
+      });
+
+      const resHeaders = new Headers();
+
+      // copia headers relevantes
+      const allowedHeaders = ["content-type", "cache-control", "expires", "last-modified", "etag"];
+      for (const h of allowedHeaders) {
+        const val = response.headers.get(h);
+        if (val) resHeaders.set(h, val);
+      }
+
+      // remove proteções
+      resHeaders.set("Access-Control-Allow-Origin", "*");
+      resHeaders.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+      resHeaders.set("Access-Control-Allow-Headers", "*");
+
+      // repassa set-cookie pro proxy via header customizado
+      const setCookie = response.headers.get("set-cookie");
+      if (setCookie) resHeaders.set("x-relay-set-cookie", setCookie);
+
+      return new Response(response.body, {
+        status: response.status,
+        headers: resHeaders
+      });
+
+    } catch (err) {
+      return new Response("relay erro: " + err.message, { status: 500 });
+    }
+  }
+};
