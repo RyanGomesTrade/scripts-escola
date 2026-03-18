@@ -26,12 +26,12 @@
 
       const encoded = encodeUrl(url);
 
- window.location.href = "/?url=" + encoded;
+window.location.href = "/scripts-escola/?url=" + encoded;
     }
 
     // Registrar Service Worker
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js");
+  navigator.serviceWorker.register("/scripts-escola/sw.js");
     }
   </script>
 </body>

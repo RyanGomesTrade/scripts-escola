@@ -17,5 +17,5 @@ async function handleProxy(request) {
     decoded = encoded;
   }
 
-  return fetch("https://SEU-WORKER.workers.dev/?url=" + encodeURIComponent(decoded));
+  return fetch("quiet-river-77cb.ryangomesmelo123.workers.dev/?url=" + encodeURIComponent(decoded));
 }
