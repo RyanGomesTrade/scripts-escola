@@ -1,21 +1,43 @@
 self.addEventListener("fetch", event => {
-  const url = new URL(event.request.url);
-
- if (url.searchParams.has("url")) {
-    event.respondWith(handleProxy(event.request));
-  }
+  event.respondWith(handleRequest(event.request));
 });
 
-async function handleProxy(request) {
+async function handleRequest(request) {
   const url = new URL(request.url);
-  const encoded = url.searchParams.get("url");
 
-  let decoded;
-  try {
-    decoded = atob(encoded);
-  } catch {
-    decoded = encoded;
+  // pega URL codificada
+  let encoded = url.searchParams.get("url");
+
+  if (!encoded) {
+    return fetch(request);
   }
 
-  return fetch("quiet-river-77cb.ryangomesmelo123.workers.dev/?url=" + encodeURIComponent(decoded));
+  const target = atob(encoded);
+
+  const response = await fetch(target, {
+    headers: {
+      "User-Agent": navigator.userAgent
+    }
+  });
+
+  let contentType = response.headers.get("content-type") || "";
+
+  // 👉 se for HTML, reescreve
+  if (contentType.includes("text/html")) {
+    let text = await response.text();
+
+    // 🔥 REESCREVE LINKS
+    text = text.replace(/(href|src)=["']\/(.*?)["']/g, (match, attr, path) => {
+      return `${attr}="?url=${btoa(new URL(path, target).href)}"`;
+    });
+
+    // 🔥 remove proteções
+    return new Response(text, {
+      headers: {
+        "Content-Type": "text/html"
+      }
+    });
+  }
+
+  return response;
 }
