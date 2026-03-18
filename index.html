@@ -1,56 +1,38 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gomes Proxy Browser</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #121212; color: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        .header { background: #1f1f1f; padding: 15px; display: flex; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); z-index: 10; }
-        input { flex: 1; padding: 12px; border-radius: 5px; border: none; background: #333; color: white; outline: none; }
-        button { padding: 10px 20px; background: #6a11cb; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #2575fc; }
-        .browser-container { flex: 1; width: 100%; border: none; background: white; }
-        iframe { width: 100%; height: 100%; border: none; }
-        .info { position: fixed; bottom: 10px; right: 10px; font-size: 12px; color: #666; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Proxy Advanced</title>
 </head>
 <body>
+  <h1>Proxy 🔓</h1>
 
-    <div class="header">
-        <input type="text" id="urlInput" placeholder="Digite a URL completa (ex: https://google.com)">
-        <button onclick="navegar()">Ir para o site</button>
-    </div>
+  <input id="url" placeholder="Digite o site">
+  <button onclick="go()">Acessar</button>
 
-    <div class="browser-container" id="container">
-        <iframe id="browserFrame" src="about:blank"></iframe>
-    </div>
+  <script>
+    const worker = "quiet-river-77cb.ryangomesmelo123.workers.dev";
 
-    <div class="info">By Gomes | Proxy Engine via Cloudflare</div>
+    function encodeUrl(url) {
+      return btoa(url);
+    }
 
-    <script>
-        // SUBSTITUA ABAIXO PELA SUA URL DO CLOUDFLARE WORKER
-        const PROXY_URL = "https://web-proxy-3503.ryangomesmelo123.workers.dev/?url=";
+    function go() {
+      let url = document.getElementById("url").value;
 
-        function navegar() {
-            let target = document.getElementById('urlInput').value;
-            
-            if (!target.startsWith('http')) {
-                target = 'https://' + target;
-            }
+      if (!url.startsWith("http")) {
+        url = "https://" + url;
+      }
 
-            const frame = document.getElementById('browserFrame');
-            
-            // Aqui a mágica acontece: ele pede ao Proxy para buscar o site
-            frame.src = PROXY_URL + encodeURIComponent(target);
-        }
+      const encoded = encodeUrl(url);
 
-        // Permitir dar "Enter" no input
-        document.getElementById('urlInput').addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                navegar();
-            }
-        });
-    </script>
+      window.location.href = "/proxy?url=" + encoded;
+    }
+
+    // Registrar Service Worker
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js");
+    }
+  </script>
 </body>
 </html>
