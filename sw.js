@@ -1,7 +1,7 @@
 self.addEventListener("fetch", event => {
   const url = new URL(event.request.url);
 
-  if (url.pathname.startsWith("/proxy")) {
+ if (url.searchParams.has("url")) {
     event.respondWith(handleProxy(event.request));
   }
 });
