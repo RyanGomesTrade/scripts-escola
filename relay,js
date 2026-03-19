@@ -24,17 +24,26 @@ export default {
     }
 
     try {
-      const reqHeaders = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": request.headers.get("accept") || "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
-        "Referer": new URL(targetUrl).origin + "/",
-        "Origin": new URL(targetUrl).origin,
-      };
+      const targetObj = new URL(targetUrl);
+      const reqHeaders = {};
 
-      // repassa cookie se vier do proxy
-      const cookie = request.headers.get("x-relay-cookie");
-      if (cookie) reqHeaders["Cookie"] = cookie;
+      // Repassa headers que o prox.js enviou (incluindo Content-Type e chaves de API)
+      for (const [key, value] of request.headers.entries()) {
+        const k = key.toLowerCase();
+        // Evita headers que podem causar conflito de host ou segurança do worker
+        if (!["host", "connection", "cf-ray", "x-forwarded-for"].includes(k)) {
+          reqHeaders[key] = value;
+        }
+      }
+
+      // Sobrescreve/Garante os headers de identidade para o alvo
+      reqHeaders["Origin"] = targetObj.origin;
+      reqHeaders["Referer"] = targetObj.origin + "/";
+      reqHeaders["Host"] = targetObj.host;
+
+      // Ajuste de cookie vindo do proxy
+      const relayCookie = request.headers.get("x-relay-cookie");
+      if (relayCookie) reqHeaders["Cookie"] = relayCookie;
 
       const response = await fetch(targetUrl, {
         method: request.method,
@@ -44,20 +53,17 @@ export default {
       });
 
       const resHeaders = new Headers();
-
-      // copia headers relevantes
       const allowedHeaders = ["content-type", "cache-control", "expires", "last-modified", "etag"];
+
       for (const h of allowedHeaders) {
         const val = response.headers.get(h);
         if (val) resHeaders.set(h, val);
       }
 
-      // remove proteções
       resHeaders.set("Access-Control-Allow-Origin", "*");
       resHeaders.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
       resHeaders.set("Access-Control-Allow-Headers", "*");
 
-      // repassa set-cookie pro proxy via header customizado
       const setCookie = response.headers.get("set-cookie");
       if (setCookie) resHeaders.set("x-relay-set-cookie", setCookie);
 
